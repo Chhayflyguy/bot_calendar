@@ -13,7 +13,7 @@ const express = require('express');
 const path = require('path');
 const { getAllEvents } = require('./event-store');
 
-const PORT = process.env.CALENDAR_PORT || 3333;
+const PORT = process.env.PORT || process.env.CALENDAR_PORT || 3333;
 
 const app = express();
 

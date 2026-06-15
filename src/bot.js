@@ -378,7 +378,8 @@ bot.action('add_to_calendar', async (ctx) => {
   try {
     const saved = saveEvent(event);
 
-    const calendarUrl = `http://localhost:${process.env.CALENDAR_PORT || 3333}`;
+    const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.PUBLIC_URL || `localhost:${process.env.CALENDAR_PORT || 3333}`;
+    const calendarUrl = domain.includes('localhost') ? `http://${domain}` : `https://${domain}`;
 
     await ctx.editMessageText(
       `✅ *Event added to calendar!*\n\n` +
