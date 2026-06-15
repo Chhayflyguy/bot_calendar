@@ -109,4 +109,21 @@ function deleteEvent(id) {
   return true;
 }
 
-module.exports = { getAllEvents, saveEvent, deleteEvent };
+/**
+ * Update the RSVP status of an event.
+ * @param {number} id
+ * @param {string|null} status - 'going', 'not_going', or null
+ * @returns {object|null} The updated event object, or null if not found
+ */
+function updateEventRsvp(id, status) {
+  const events = getAllEvents();
+  const event = events.find(e => e.id === id);
+  if (!event) return null;
+
+  event.rsvpStatus = status;
+  ensureDataFile();
+  fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2), 'utf-8');
+  return event;
+}
+
+module.exports = { getAllEvents, saveEvent, deleteEvent, updateEventRsvp };

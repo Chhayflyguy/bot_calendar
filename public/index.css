@@ -686,6 +686,78 @@ button {
   overflow-y: auto;
 }
 
+/* ─── RSVP & Event Mutation Styles ─── */
+.event--not-going {
+  opacity: 0.45 !important;
+  text-decoration: line-through !important;
+  filter: grayscale(30%) !important;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  justify-content: flex-end;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.modal__rsvp-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+
+.modal__btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  transition: all 120ms var(--ease);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.modal__btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modal__btn--active-going {
+  background: var(--ev-green-bg) !important;
+  color: var(--ev-green-fg) !important;
+  border-color: var(--ev-green-border) !important;
+}
+
+.modal__btn--active-going:hover {
+  background: var(--ev-green-bg) !important;
+  opacity: 0.9;
+}
+
+.modal__btn--active-notgoing {
+  background: var(--ev-rose-bg) !important;
+  color: var(--ev-rose-fg) !important;
+  border-color: var(--ev-rose-border) !important;
+}
+
+.modal__btn--active-notgoing:hover {
+  background: var(--ev-rose-bg) !important;
+  opacity: 0.9;
+}
+
+.modal__btn--danger {
+  background: #fdf2f2;
+  color: #c5221f;
+  border-color: #fbd5d5;
+}
+
+.modal__btn--danger:hover {
+  background: #fde8e8;
+  border-color: #f8b4b4;
+}
+
 /* ═══════════════════════════════════════════════════
    Utility
    ═══════════════════════════════════════════════════ */
