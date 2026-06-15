@@ -22,6 +22,7 @@ let currentYear = currentDate.getFullYear();
 let currentMonth = currentDate.getMonth();
 let currentView = 'month';
 let events = [];
+let activeModalEvent = null;
 
 // ═══════════════════════════════════════════════════
 //  DOM References
@@ -40,6 +41,9 @@ const $modalOverlay = document.getElementById('modal-overlay');
 const $modalTitle = document.getElementById('modal-title');
 const $modalMeta = document.getElementById('modal-meta');
 const $modalDesc = document.getElementById('modal-description');
+const $btnRsvpGoing = document.getElementById('btn-rsvp-going');
+const $btnRsvpNotGoing = document.getElementById('btn-rsvp-notgoing');
+const $btnDeleteEvent = document.getElementById('btn-delete-event');
 
 // ═══════════════════════════════════════════════════
 //  Helpers
@@ -140,7 +144,11 @@ function createDayCell(y, m, d, isOtherMonth) {
   dayEvents.slice(0, maxVisible).forEach((ev) => {
     const chip = document.createElement('div');
     chip.className = `event-chip event-chip--${ev.color}`;
-    chip.textContent = ev.title;
+    if (ev.rsvpStatus === 'not_going') {
+      chip.classList.add('event--not-going');
+    }
+    const displayTitle = ev.rsvpStatus === 'going' ? `✓ ${ev.title}` : ev.title;
+    chip.textContent = displayTitle;
     chip.addEventListener('click', (e) => {
       e.stopPropagation();
       openModal(ev);
@@ -227,13 +235,15 @@ function renderWeekView() {
     dayEvents.forEach((ev) => {
       const topOffset = (ev.startHour - startHourSlot) * 50;
       const height = (ev.endHour - ev.startHour) * 50;
+      const notGoingClass = ev.rsvpStatus === 'not_going' ? ' event--not-going' : '';
+      const displayTitle = ev.rsvpStatus === 'going' ? `✓ ${ev.title}` : ev.title;
       bodyHTML += `
-        <div class="week-view__event-block" data-event-id="${ev.id}"
+        <div class="week-view__event-block${notGoingClass}" data-event-id="${ev.id}"
              style="top:${topOffset}px; height:${Math.max(height, 25)}px;
                     background:${colorBg[ev.color] || '#e8f0fe'};
                     border-left:3px solid ${colorFg[ev.color] || '#1a73e8'};
                     color:${colorFg[ev.color] || '#1a73e8'};">
-          <div style="font-weight:600; font-size:0.72rem;">${ev.title}</div>
+          <div style="font-weight:600; font-size:0.72rem;">${displayTitle}</div>
           <div class="week-view__event-time">${ev.startTime || ''} ${ev.endTime ? '– ' + ev.endTime : ''}</div>
         </div>`;
     });
@@ -297,11 +307,13 @@ function renderListView() {
     html += `<div class="list-view__date-label">${formatDateLong(date)}</div>`;
 
     evts.forEach(ev => {
+      const notGoingClass = ev.rsvpStatus === 'not_going' ? ' event--not-going' : '';
+      const displayTitle = ev.rsvpStatus === 'going' ? `✓ ${ev.title}` : ev.title;
       html += `
-        <div class="list-view__event-card" data-event-id="${ev.id}">
+        <div class="list-view__event-card${notGoingClass}" data-event-id="${ev.id}">
           <div class="list-view__color-bar" style="background:${colorFg[ev.color] || '#1a73e8'}"></div>
           <div class="list-view__event-info">
-            <div class="list-view__event-title">${ev.title}</div>
+            <div class="list-view__event-title">${displayTitle}</div>
             <div class="list-view__event-detail">
               <span class="list-view__event-detail-icon">⏰</span>
               ${ev.startTime || 'All day'}${ev.endTime ? ' – ' + ev.endTime : ''}
@@ -341,6 +353,7 @@ function renderListView() {
 // ═══════════════════════════════════════════════════
 
 function openModal(ev) {
+  activeModalEvent = ev;
   $modalTitle.textContent = ev.title;
 
   let metaHTML = '';
@@ -375,13 +388,23 @@ function openModal(ev) {
 
   $modalMeta.innerHTML = metaHTML;
   $modalDesc.textContent = ev.description || '';
+  updateModalRsvpButtons();
   $modalOverlay.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
+  activeModalEvent = null;
   $modalOverlay.classList.add('hidden');
   document.body.style.overflow = '';
+}
+
+function updateModalRsvpButtons() {
+  if (!activeModalEvent) return;
+  const status = activeModalEvent.rsvpStatus;
+  
+  $btnRsvpGoing.classList.toggle('modal__btn--active-going', status === 'going');
+  $btnRsvpNotGoing.classList.toggle('modal__btn--active-notgoing', status === 'not_going');
 }
 
 // ═══════════════════════════════════════════════════
@@ -445,6 +468,66 @@ $modalOverlay.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
+
+$btnRsvpGoing.addEventListener('click', () => toggleRsvp('going'));
+$btnRsvpNotGoing.addEventListener('click', () => toggleRsvp('not_going'));
+$btnDeleteEvent.addEventListener('click', deleteActiveEvent);
+
+async function toggleRsvp(status) {
+  if (!activeModalEvent) return;
+  const currentStatus = activeModalEvent.rsvpStatus;
+  const newStatus = currentStatus === status ? null : status;
+
+  try {
+    const res = await fetch(`/api/events/${activeModalEvent.id}/rsvp`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        // Update local events array and the active modal event reference
+        activeModalEvent.rsvpStatus = newStatus;
+        const index = events.findIndex(e => e.id === activeModalEvent.id);
+        if (index !== -1) {
+          events[index].rsvpStatus = newStatus;
+        }
+        
+        updateModalRsvpButtons();
+        render();
+      }
+    }
+  } catch (err) {
+    console.error('Error toggling RSVP:', err);
+  }
+}
+
+async function deleteActiveEvent() {
+  if (!activeModalEvent) return;
+  if (!confirm(`Are you sure you want to delete "${activeModalEvent.title}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/events/${activeModalEvent.id}`, {
+      method: 'DELETE',
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        // Remove from local array
+        events = events.filter(e => e.id !== activeModalEvent.id);
+        closeModal();
+        render();
+      }
+    }
+  } catch (err) {
+    console.error('Error deleting event:', err);
+  }
+}
 
 // ═══════════════════════════════════════════════════
 //  Load events from API — auto-refresh every 10s
