@@ -1,0 +1,22 @@
+{
+  "name": "telegram-event-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot that extracts event info and generates .ics calendar files for Microsoft Teams/Outlook",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "calendar": "node src/calendar-server.js",
+    "test": "node src/test-parser.js"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.16.2",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "ical-generator": "^8.0.0",
+    "telegraf": "^4.16.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

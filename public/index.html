@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive calendar view for Telegram Event Bot — browse, filter, and preview all parsed events at a glance.">
+  <title>Event Calendar — Telegram Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- ───── Top Navigation Bar ───── -->
+  <header class="topbar" id="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__logo">📅</span>
+      <h1 class="topbar__title">Event Calendar</h1>
+    </div>
+    <nav class="topbar__nav" aria-label="Calendar views">
+      <button class="topbar__view-btn active" data-view="month" id="btn-month-view">Month</button>
+      <button class="topbar__view-btn" data-view="week" id="btn-week-view">Week</button>
+      <button class="topbar__view-btn" data-view="list" id="btn-list-view">List</button>
+    </nav>
+    <div class="topbar__actions">
+      <button class="topbar__today-btn" id="btn-today">Today</button>
+    </div>
+  </header>
+
+  <!-- ───── Main Content ───── -->
+  <main class="app" id="app">
+    <!-- Calendar Header (Month/Year + nav arrows) -->
+    <section class="cal-header" id="cal-header" aria-label="Calendar navigation">
+      <button class="cal-header__arrow" id="btn-prev" aria-label="Previous month">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M13 4L7 10L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h2 class="cal-header__title" id="cal-title">June 2026</h2>
+      <button class="cal-header__arrow" id="btn-next" aria-label="Next month">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </section>
+
+    <!-- Month View -->
+    <section class="calendar" id="calendar-month" aria-label="Monthly calendar view">
+      <div class="calendar__weekdays" id="weekday-headers"></div>
+      <div class="calendar__grid" id="calendar-grid"></div>
+    </section>
+
+    <!-- Week View -->
+    <section class="week-view hidden" id="calendar-week" aria-label="Weekly calendar view">
+      <div class="week-view__header" id="week-header"></div>
+      <div class="week-view__body" id="week-body"></div>
+    </section>
+
+    <!-- List View -->
+    <section class="list-view hidden" id="calendar-list" aria-label="Event list view">
+      <div class="list-view__container" id="list-container"></div>
+    </section>
+  </main>
+
+  <!-- ───── Event Detail Modal ───── -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal__close" id="modal-close" aria-label="Close event details">&times;</button>
+      <div class="modal__accent"></div>
+      <div class="modal__body">
+        <h3 class="modal__title" id="modal-title"></h3>
+        <div class="modal__meta" id="modal-meta"></div>
+        <div class="modal__description" id="modal-description"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
